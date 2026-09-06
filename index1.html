@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Brother.exe — Birthday Surprise</title>
+<style>
+/* ============================================================
+   BROTHER.EXE — a sister's birthday surprise
+   Design: dark terminal → warm romantic reveal, gold/rose accents
+   ============================================================ */
+:root{
+  --bg:#070508;
+  --bg-2:#0d0812;
+  --panel:#120c18;
+  --panel-line:#2a1f33;
+  --gold:#e8b968;
+  --rose:#e0607e;
+  --mint:#4fd9b0;
+  --text:#efe7f0;
+  --text-dim:#b8aec0;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+  --mono:'Consolas','SF Mono',Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--serif);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}
+}
+::selection{background:var(--rose);color:#fff}
+button{font-family:inherit}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* ---------- layout shells ---------- */
+.screen{min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:24px;position:relative}
+.hidden{display:none!important}
+
+/* ================= TERMINAL / PASSWORD GATE ================= */
+#gate{background:radial-gradient(ellipse at 50% 20%,#141022 0%,var(--bg) 65%)}
+.term-window{
+  width:min(560px,94vw);
+  background:var(--panel);
+  border:1px solid var(--panel-line);
+  border-radius:12px;
+  box-shadow:0 30px 80px -20px #000a, 0 0 0 1px #ffffff08 inset;
+  overflow:hidden;
+  font-family:var(--mono);
+}
+.term-bar{padding:10px 14px;background:#1a1420;color:#8b8194;font-size:13px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--panel-line)}
+.term-dots{display:inline-flex;gap:7px}
+.term-dots i{width:10px;height:10px;border-radius:50%;display:block}
+.term-dots i:nth-child(1){background:#ff5f56}.term-dots i:nth-child(2){background:#ffbd2e}.term-dots i:nth-child(3){background:#27c93f}
+.term-body{padding:28px 26px 30px}
+.term-line{color:var(--text-dim);font-size:14px;line-height:1.9;min-height:1.9em}
+.term-line b{color:var(--gold);font-weight:600}
+.term-ok{color:var(--mint)}
+.cursor{display:inline-block;width:8px;height:15px;background:var(--gold);vertical-align:middle;margin-left:2px;animation:blink .85s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+.gate-prompt{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+.gate-prompt.hidden{display:none}
+#pwInput{
+  width:100%;
+  padding:13px 16px;
+  background:#0a0610;
+  border:1px solid var(--panel-line);
+  border-radius:8px;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:15px;
+  letter-spacing:1px;
+}
+#pwInput::placeholder{color:#5c5265}
+.gate-row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{
+  border:0;border-radius:999px;
+  padding:13px 26px;
+  background:linear-gradient(135deg,var(--gold),#c98f4a);
+  color:#241505;font-weight:700;
+  cursor:pointer;font-size:15px;
+  font-family:var(--serif);
+  box-shadow:0 10px 30px -8px #e8b96866;
+  transition:transform .2s ease, box-shadow .2s ease;
+  white-space:nowrap;
+}
+.btn:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 14px 34px -8px #e8b96899}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn.ghost{
+  background:transparent;
+  color:var(--text-dim);
+  border:1px solid var(--panel-line);
+  box-shadow:none;
+}
+.btn.ghost:hover{color:var(--text);border-color:var(--gold)}
+.btn.small{padding:9px 18px;font-size:13px}
+#pwError{color:var(--rose);font-size:13.5px;min-height:1.4em;font-family:var(--serif)}
+
+/* ================= WELCOME FLASH ================= */
+#accessGranted{background:var(--bg);text-align:center}
+#accessGranted .flash-text{
+  font-family:var(--serif);
+  font-size:clamp(30px,7vw,54px);
+  color:var(--mint);
+  opacity:0;
+  transform:scale(.9);
+}
+#accessGranted .flash-sub{
+  color:var(--text-dim);font-size:15px;letter-spacing:.3px;margin-top:10px;opacity:0;
+}
+.flash-in{animation:flashIn 1s ease forwards}
+@keyframes flashIn{to{opacity:1;transform:scale(1)}}
+
+/* ================= HERO ================= */
+#hero{
+  background:
+    radial-gradient(circle at 18% 15%, #e0607e22 0%, transparent 45%),
+    radial-gradient(circle at 82% 85%, #4fd9b022 0%, transparent 45%),
+    var(--bg);
+  flex-direction:column;text-align:center;padding:70px 20px 50px;
+}
+.hero-eyebrow{color:var(--gold);font-size:14px;letter-spacing:2px;opacity:.85;margin-bottom:6px}
+.hero-cake{font-size:clamp(46px,10vw,70px);margin-bottom:6px;display:inline-block;animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+h1.hero-title{
+  font-size:clamp(38px,8vw,78px);
+  margin:6px 0 14px;
+  line-height:1.05;
+  background:linear-gradient(100deg,var(--gold),var(--rose) 55%,var(--mint));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  font-weight:600;
+}
+.hero-name{color:var(--text);font-size:clamp(20px,4.5vw,30px);font-weight:600;margin-bottom:14px}
+.hero-sub{color:var(--text-dim);font-size:clamp(15px,2.6vw,19px);max-width:520px;margin:0 auto 34px;line-height:1.6}
+.scroll-hint{color:var(--text-dim);font-size:13px;letter-spacing:1px;margin-top:44px;opacity:.7;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* ================= SURPRISES SECTION ================= */
+#surprises{flex-direction:column;padding:60px 20px 90px;background:var(--bg)}
+.progress-wrap{width:min(560px,92vw);margin:0 auto 42px;text-align:center}
+.progress-label{color:var(--text-dim);font-size:13px;letter-spacing:1px;margin-bottom:10px;font-family:var(--mono)}
+.progress-track{height:6px;border-radius:99px;background:#1c1522;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--rose));width:0%;transition:width .6s ease}
+
+.cards{
+  width:min(920px,94vw);margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:18px;
+}
+.s-card{
+  position:relative;
+  background:linear-gradient(160deg,#15101d,#0e0a14);
+  border:1px solid var(--panel-line);
+  border-radius:18px;
+  padding:28px 22px;
+  text-align:left;
+  cursor:pointer;
+  transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  backdrop-filter:blur(6px);
+}
+.s-card:not(.locked):hover{transform:translateY(-4px);border-color:var(--gold);box-shadow:0 18px 40px -18px #e8b96855}
+.s-card .s-icon{font-size:30px;margin-bottom:14px;display:block}
+.s-card .s-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px}
+.s-card .s-desc{font-size:13.5px;color:var(--text-dim);line-height:1.5}
+.s-card .s-status{position:absolute;top:16px;right:18px;font-size:11px;letter-spacing:.5px;color:var(--mint);font-family:var(--mono)}
+.s-card.locked{cursor:not-allowed;opacity:.45;filter:grayscale(.5)}
+.s-card.locked .s-status{color:var(--text-dim)}
+.s-card.done{border-color:#3a4a3f}
+.s-card.done .s-status{color:var(--mint)}
+
+/* ================= MODAL / REVEAL PANEL ================= */
+#modalOverlay{
+  position:fixed;inset:0;background:#040308ee;
+  display:flex;align-items:center;justify-content:center;
+  padding:22px;z-index:60;opacity:0;pointer-events:none;
+  transition:opacity .3s ease;
+}
+#modalOverlay.open{opacity:1;pointer-events:auto}
+.modal{
+  width:min(620px,94vw);max-height:85vh;overflow-y:auto;
+  background:linear-gradient(160deg,#181022,#100a16);
+  border:1px solid var(--panel-line);
+  border-radius:22px;
+  padding:38px 30px 32px;
+  position:relative;
+  transform:translateY(24px) scale(.97);opacity:0;
+  transition:transform .35s cubic-bezier(.2,.8,.3,1), opacity .35s ease;
+  box-shadow:0 40px 100px -30px #000c;
+}
+#modalOverlay.open .modal{transform:translateY(0) scale(1);opacity:1}
+.modal-close{
+  position:absolute;top:16px;right:18px;
+  background:none;border:0;color:var(--text-dim);font-size:22px;cursor:pointer;
+  padding:6px;line-height:1;box-shadow:none;
+}
+.modal-close:hover{color:var(--text)}
+.modal-icon{font-size:34px;margin-bottom:12px}
+.modal-title{font-size:clamp(22px,4.5vw,30px);color:var(--gold);margin:0 0 16px;font-weight:600}
+.modal-body{color:var(--text);font-size:16px;line-height:1.85}
+.modal-body p{margin:0 0 14px}
+.modal-body .hi{color:var(--rose);font-weight:600}
+.reason-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+.reason-list li{
+  background:#ffffff08;border:1px solid var(--panel-line);border-radius:12px;
+  padding:14px 16px;font-size:15px;line-height:1.6;
+}
+.reason-list li b{color:var(--mint)}
+.memory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-top:6px}
+.memory-slot{
+  aspect-ratio:1;border:1.5px dashed var(--panel-line);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  color:var(--text-dim);font-size:12px;text-align:center;padding:10px;gap:6px;
+  background:#ffffff05;
+}
+.memory-slot span.big{font-size:24px}
+.memory-note{font-size:13px;color:var(--text-dim);margin-top:14px;font-style:italic}
+
+/* audio player */
+.audio-box{
+  display:flex;align-items:center;gap:16px;
+  background:#ffffff08;border:1px solid var(--panel-line);
+  border-radius:16px;padding:18px 20px;margin-top:6px;
+}
+#playToggle{
+  width:52px;height:52px;border-radius:50%;flex:0 0 auto;
+  background:linear-gradient(135deg,var(--rose),var(--gold));
+  color:#1a0d10;font-size:20px;display:flex;align-items:center;justify-content:center;
+  padding:0;box-shadow:0 8px 22px -6px #e0607e77;
+}
+.audio-meta{flex:1;min-width:0}
+.audio-title{font-size:14.5px;color:var(--text);font-weight:600}
+.audio-hint{font-size:12.5px;color:var(--text-dim);margin-top:3px}
+.bars{display:flex;align-items:flex-end;gap:3px;height:20px;margin-top:8px}
+.bars i{width:3px;background:var(--mint);border-radius:2px;height:6px;display:block}
+.bars.playing i{animation:eq 1s ease-in-out infinite}
+.bars i:nth-child(1){animation-delay:0s}.bars i:nth-child(2){animation-delay:.15s}.bars i:nth-child(3){animation-delay:.3s}.bars i:nth-child(4){animation-delay:.1s}.bars i:nth-child(5){animation-delay:.25s}
+@keyframes eq{0%,100%{height:6px}50%{height:20px}}
+
+.typewriter-box{font-family:var(--mono);font-size:15px;color:var(--mint);min-height:3.2em;line-height:1.8}
+
+/* ================= FINAL CELEBRATION ================= */
+#finale{
+  background:radial-gradient(circle at 50% 30%,#241432 0%, var(--bg) 70%);
+  flex-direction:column;text-align:center;padding:70px 20px;position:relative;overflow:hidden;
+}
+.finale-cake{font-size:clamp(56px,12vw,90px);margin-bottom:8px}
+h1.finale-title{
+  font-size:clamp(36px,9vw,84px);margin:8px 0 12px;
+  background:linear-gradient(100deg,var(--rose),var(--gold),var(--mint));
+  -webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700;
+}
+.finale-msg{max-width:620px;margin:0 auto;color:var(--text);font-size:clamp(15px,2.6vw,18px);line-height:1.85}
+.finale-msg b{color:var(--gold)}
+.finale-sign{margin-top:26px;color:var(--text-dim);font-style:italic;font-size:15px}
+#replayBtn{margin-top:32px}
+
+/* ================= FX LAYERS ================= */
+#fxLayer{position:fixed;inset:0;pointer-events:none;z-index:55;overflow:hidden}
+.confetti-piece{position:absolute;width:8px;height:14px;top:-20px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+.heart-piece{position:absolute;bottom:-30px;font-size:18px;animation:rise linear forwards}
+@keyframes rise{to{transform:translateY(-115vh) translateX(var(--drift,0px)) rotate(20deg);opacity:0}}
+.sparkle-piece{position:absolute;font-size:14px;animation:sparkle 1.6s ease-out forwards}
+@keyframes sparkle{0%{opacity:0;transform:scale(.2) rotate(0)}30%{opacity:1;transform:scale(1) rotate(90deg)}100%{opacity:0;transform:scale(.4) rotate(180deg) translateY(-20px)}}
+
+.balloon{position:absolute;bottom:-120px;width:46px;height:58px;border-radius:50% 50% 50% 50%/58% 58% 42% 42%;animation:balloonRise linear forwards}
+.balloon::after{content:'';position:absolute;left:50%;top:100%;width:1px;height:70px;background:#ffffff33;transform:translateX(-50%)}
+@keyframes balloonRise{to{transform:translateY(-135vh)}}
+
+@media(max-width:520px){
+  .term-body{padding:22px 18px 24px}
+  .modal{padding:30px 20px 26px;border-radius:18px}
+  .s-card{padding:22px 18px}
+}
+</style>
+</head>
+<body>
+
+<!-- =============== FX LAYER (confetti / hearts / sparkles / balloons) =============== -->
+<div id="fxLayer"></div>
+
+<!-- =============== 1. PASSWORD GATE =============== -->
+<div id="gate" class="screen">
+  <div class="term-window">
+    <div class="term-bar"><span class="term-dots"><i></i><i></i><i></i></span> brother.exe — access terminal</div>
+    <div class="term-body">
+      <div id="bootLines"></div>
+      <div id="gatePrompt" class="gate-prompt hidden">
+        <label for="pwInput" style="color:var(--text-dim);font-size:13.5px">This surprise is only for you, ❤️ — enter the password to continue:</label>
+        <input id="pwInput" type="password" placeholder="Enter password..." autocomplete="off" />
+        <div class="gate-row">
+          <button class="btn" onclick="checkPassword()">Unlock Surprise 🔓</button>
+        </div>
+        <div id="pwError"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============== 2. ACCESS GRANTED FLASH =============== -->
+<div id="accessGranted" class="screen hidden">
+  <div>
+    <div class="flash-text">Access Granted ❤️</div>
+    <div class="flash-sub">Welcome in, <span id="grantedName"></span>...</div>
+  </div>
+</div>
+
+<!-- =============== 3. HERO =============== -->
+<div id="hero" class="screen hidden">
+  <div class="hero-eyebrow">A LITTLE SOMETHING FROM YOUR SISTER</div>
+  <div class="hero-cake">🎂</div>
+  <h1 class="hero-title">Happy Birthday!</h1>
+  <div class="hero-name" id="heroName">Brother</div>
+  <p class="hero-sub">Today isn't just your birthday... it's a celebration of the person you are.</p>
+  <button class="btn" onclick="goToSurprises()">Begin the Surprise ✨</button>
+  <div class="scroll-hint">5 surprises are waiting below ↓</div>
+</div>
+
+<!-- =============== 4. SURPRISE BUTTONS =============== -->
+<div id="surprises" class="screen hidden" style="min-height:100vh;">
+  <div class="progress-wrap">
+    <div class="progress-label" id="progressLabel">Surprise 0 / 5 unlocked</div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="cards" id="cardGrid">
+    <!-- cards injected by JS -->
+  </div>
+</div>
+
+<!-- =============== MODAL =============== -->
+<div id="modalOverlay" onclick="if(event.target===this) closeModal()">
+  <div class="modal" id="modalContent" role="dialog" aria-modal="true">
+    <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+    <div id="modalInner"></div>
+  </div>
+</div>
+
+<!-- =============== 5. FINALE =============== -->
+<div id="finale" class="screen hidden">
+  <div class="finale-cake">🎉🎂🎉</div>
+  <h1 class="finale-title">HAPPY BIRTHDAY!</h1>
+  <p class="finale-msg">
+    To my real brother, <b id="finaleName">Brother</b> —<br><br>
+    I once said, <i>"If I had a brother, I'd want him to be exactly like you."</i>
+    Turns out I didn't need to imagine it. Rakhi thread or not, blood or not — you are
+    my brother in every way that has ever mattered, and the one who shows up for me
+    when it counts.<br><br>
+    So here's to a year of <b>zero bugs</b>, unstoppable success, and enough money that
+    we both finally get to be rich. 😂💰<br><br>
+    Just promise me one thing: never break your sister's trust. 🤞<br><br>
+     Happy birthday mere  jalankhurre bhaiiiiiiiiiii  🎈
+  </p>
+  <div class="finale-sign">— Your sister, always</div>
+  <button class="btn ghost small" id="replayBtn" onclick="celebrateFinale()">🎊 Celebrate Again</button>
+</div>
+
+<script>
+/* ============================================================
+   ⚙️  CONFIGURATION — edit everything here, nothing else needed
+   ============================================================ */
+const birthdayConfig = {
+  brotherName: "uziiii",          // 👈 change his name here
+  password: "beautiful appi",             // 👈 change the secret password here (case-sensitive)
+  year: "2026",
+
+  // 👇 Message shown after "A Message From Me" is opened
+  personalMessage: `Bro, I was going to buy you something amazing, but then I remembered
+  you already have me. 😌❤️ You've been the one constant I can always lean on, the one
+  who never makes me feel small for needing help, and the one I genuinely trust with
+  everything. I don't say it enough, so I'm saying it here: I'm proud of you, and I'm
+  lucky to have you as my brotherrrrr.`,
+
+  // 👇 The four "why you're special" reasons — add or remove freely
+  reasons: [
+    "You show up for me even when it's inconvenient for you.",
+    "You never let me feel alone, even from a distance.",
+    "You always listen to my chatter, well, you don't really have any other option anyway.",
+    "You've grown into someone I genuinely look up to — not because I have to, but because I want to."
+  ],
+
+  // 👇 Funny "Brother Mode" one-liners — add as many as you like
+  funnyLines: [
+    "Warning: This sister comes with unlimited unsolicited advice. No refunds.",
+    "some beautifuls names of yoursss    1.penguin   2.alligator   3.gorilla. 4.monkey last but not the very least 5.guyzzzz",
+    "Officially certified: World's Most Patient Brother™ (patience tested daily by me).",
+    "guyz ke bike se pair zameen pr nhi lgteeeeeee"
+  ],
+
+  
+
+  
+};
+
+/* ============================================================
+   BOOT SEQUENCE (terminal typing effect)
+   ============================================================ */
+const bootLines = [
+  `<span class="term-ok">Initializing Brother.exe for ${birthdayConfig.brotherName}...</span>`,
+  'Loading birthday module...',
+  'Checking happiness level... <b>100%</b>',
+  'Scanning memories... <span class="term-ok">FOUND ✓</span>',
+  'Installing success.exe... <span class="term-ok">DONE ✓</span>',
+  'Removing problems... <span class="term-ok">0 detected ✓</span>',
+  'Increasing age variable... <b>+1</b>',
+  '',
+  '<span class="term-ok">Ready.</span> Authentication required to continue.'
+];
+
+const bootEl = document.getElementById('bootLines');
+let bi = 0;
+
+function typeBootLine(){
+  if(bi >= bootLines.length){
+    document.getElementById('gatePrompt').classList.remove('hidden');
+    document.getElementById('pwInput').focus();
+    return;
+  }
+  const line = bootLines[bi++];
+  const el = document.createElement('div');
+  el.className = 'term-line';
+  bootEl.appendChild(el);
+  let j = 0;
+  const plain = line.replace(/<[^>]*>/g,'');
+  function type(){
+    if(j < plain.length){
+      j++;
+      // reveal by proportion of plain-text length against the tagged string
+      el.innerHTML = revealHTML(line, j) + '<span class="cursor"></span>';
+      setTimeout(type, 14);
+    } else {
+      el.innerHTML = line;
+      setTimeout(typeBootLine, 160);
+    }
+  }
+  type();
+}
+
+// reveals `count` visible characters of an HTML string while keeping tags intact
+function revealHTML(html, count){
+  let out = '', shown = 0, i = 0;
+  while(i < html.length && shown < count){
+    if(html[i] === '<'){
+      const end = html.indexOf('>', i);
+      out += html.slice(i, end+1);
+      i = end+1;
+    } else {
+      out += html[i];
+      shown++;
+      i++;
+    }
+  }
+  return out;
+}
+
+typeBootLine();
+
+/* ============================================================
+   PASSWORD CHECK
+   ============================================================ */
+const funnyWrongMessages = [
+  "Access denied. That's not it — but nice try. 😏",
+  "Nope! Brother.exe remains locked. Try again 🔒",
+  "Incorrect. The system is judging you a little. 👀",
+  "Wrong password — but full marks for effort. 🙃"
+];
+
+function checkPassword(){
+  const input = document.getElementById('pwInput').value.trim();
+  const errorEl = document.getElementById('pwError');
+  if(input === birthdayConfig.password){
+    errorEl.textContent = '';
+    grantAccess();
+  } else {
+    errorEl.textContent = funnyWrongMessages[Math.floor(Math.random()*funnyWrongMessages.length)];
+    document.getElementById('pwInput').value = '';
+    document.querySelector('.term-window').style.animation = 'shake .4s';
+    setTimeout(()=> document.querySelector('.term-window').style.animation = '', 400);
+  }
+}
+document.getElementById('pwInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter') checkPassword();
+});
+
+// small shake keyframes injected once (kept out of main stylesheet, only used on error)
+const shakeStyle = document.createElement('style');
+shakeStyle.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}`;
+document.head.appendChild(shakeStyle);
+
+function grantAccess(){
+  document.getElementById('gate').classList.add('hidden');
+  const granted = document.getElementById('accessGranted');
+  granted.classList.remove('hidden');
+  document.getElementById('grantedName').textContent = birthdayConfig.brotherName;
+  granted.querySelector('.flash-text').classList.add('flash-in');
+  granted.querySelector('.flash-sub').style.transition = 'opacity .8s ease .4s';
+  setTimeout(()=> granted.querySelector('.flash-sub').style.opacity = 1, 50);
+  burstConfetti(70);
+  setTimeout(showHero, 1900);
+}
+
+function showHero(){
+  document.getElementById('accessGranted').classList.add('hidden');
+  document.getElementById('heroName').textContent = birthdayConfig.brotherName;
+  document.getElementById('hero').classList.remove('hidden');
+  burstBalloons(6);
+}
+
+function goToSurprises(){
+  document.getElementById('surprises').classList.remove('hidden');
+  document.getElementById('surprises').scrollIntoView({behavior:'smooth'});
+}
+
+/* ============================================================
+   SURPRISE CARDS — progressive unlock
+   ============================================================ */
+const surpriseDefs = [
+  { id:'first', icon:'🎁', title:'Open Your rprise', desc:'A heartfelt little something to start things off.' },
+  { id:'message', icon:'💌', title:'A Message From Me', desc:'Something a bit longer, and a bit more honest.' },
+
+  { id:'funny', icon:'😂', title:'Brother Mode', desc:'Sibling nonsense, unlocked.' },
+  { id:'reasons', icon:'❤️', title:"Why You're Special", desc:'A short list. Not exhaustive.' },
+  
+  { id:'final', icon:'✨', title:'One Last Surprise', desc:'Save this one for the end.' }
+];
+
+// progress only counts toward the 5-step indicator described in the brief
+const progressIds = ['first','message','memories','reasons','final'];
+let unlockedCount = 0;
+let openedIds = new Set();
+const grid = document.getElementById('cardGrid');
+
+function renderCards(){
+  grid.innerHTML = '';
+  surpriseDefs.forEach((s, idx) => {
+    const locked = isLocked(idx);
+    const done = openedIds.has(s.id);
+    const card = document.createElement('div');
+    card.className = 's-card' + (locked ? ' locked' : '') + (done ? ' done' : '');
+    card.setAttribute('role','button');
+    card.setAttribute('tabindex', locked ? '-1' : '0');
+    card.innerHTML = `
+      <span class="s-status">${locked ? '🔒 LOCKED' : done ? '✓ OPENED' : 'TAP TO OPEN'}</span>
+      <span class="s-icon">${s.icon}</span>
+      <div class="s-title">${s.title}</div>
+      <div class="s-desc">${s.desc}</div>
+    `;
+    if(!locked){
+      card.addEventListener('click', () => openSurprise(s.id));
+      card.addEventListener('keydown', e => { if(e.key==='Enter') openSurprise(s.id); });
+    }
+    grid.appendChild(card);
+  });
+}
+
+// unlock rule: first card always open; each next card unlocks once the previous is opened
+function isLocked(idx){
+  if(idx === 0) return false;
+  return !openedIds.has(surpriseDefs[idx-1].id);
+}
+
+function updateProgress(){
+  const doneCount = progressIds.filter(id => openedIds.has(id)).length;
+  document.getElementById('progressLabel').textContent = `Surprise ${doneCount} / 5 unlocked`;
+  document.getElementById('progressFill').style.width = (doneCount/5*100) + '%';
+}
+
+function openSurprise(id){
+  openedIds.add(id);
+  renderCards();
+  updateProgress();
+  showModal(id);
+}
+
+/* ---- modal content builders ---- */
+function showModal(id){
+  const inner = document.getElementById('modalInner');
+  inner.innerHTML = buildModalHTML(id);
+  document.getElementById('modalOverlay').classList.add('open');
+  if(id === 'first' || id === 'final') burstSparkles(16);
+  if(id === 'music'){
+    const audio = document.getElementById('bdayAudio');
+    const toggle = document.getElementById('playToggle');
+    const bars = document.getElementById('eqBars');
+    if(toggle){
+      toggle.addEventListener('click', () => {
+        if(!audio || !birthdayConfig.audioSrc){
+          toggle.textContent = '🎵';
+          return;
+        }
+        if(audio.paused){ audio.play(); toggle.textContent = '⏸'; bars.classList.add('playing'); }
+        else { audio.pause(); toggle.textContent = '▶'; bars.classList.remove('playing'); }
+      });
+    }
+  }
+  if(id === 'final'){
+    setTimeout(() => {
+      closeModal();
+      showFinale();
+    }, 3800);
+  }
+}
+
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeModal();
+});
+
+function buildModalHTML(id){
+  switch(id){
+    case 'first':
+      return `
+        <div class="modal-icon">🎁</div>
+        <h2 class="modal-title">Your First Surprise</h2>
+        <div class="modal-body">
+          <p>Hey <span class="hi">${birthdayConfig.brotherName}</span> — before anything else, I just want to say
+          it out loud: I'm so glad you exist. That's it. That's the whole surprise. Everything after this
+          is just extra. 🎂</p>
+        </div>
+      `;
+    case 'message':
+      return `
+        <div class="modal-icon">💌</div>
+        <h2 class="modal-title">A Message From Me</h2>
+        <div class="modal-body"><p>${birthdayConfig.personalMessage.replace(/\n\s*/g,' ')}</p></div>
+      `;
+  
+     
+    case 'funny':
+      return `
+        <div class="modal-icon">😂</div>
+        <h2 class="modal-title">Brother Mode: Activated</h2>
+        <div class="modal-body">
+          <ul class="reason-list">
+            ${birthdayConfig.funnyLines.map(l => `<li>${l}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    case 'reasons':
+      return `
+        <div class="modal-icon">❤️</div>
+        <h2 class="modal-title">Why You're Special</h2>
+        <div class="modal-body">
+          <ul class="reason-list">
+            ${birthdayConfig.reasons.map((r,i) => `<li><b>${i+1}.</b> ${r}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+   
+    case 'final':
+      return `
+        <div class="modal-icon">✨</div>
+        <h2 class="modal-title">One Last Surprise...</h2>
+        <div class="modal-body typewriter-box" id="finalTypewriter"></div>
+      `;
+  }
+  return '';
+}
+
+/* typewriter for the final reveal line, triggered right after modal renders */
+const finalLine = "Get ready, this one's the biggest of all...";
+function typeFinalLine(){
+  const el = document.getElementById('finalTypewriter');
+  if(!el) return;
+  let j = 0;
+  (function step(){
+    if(j <= finalLine.length){
+      el.textContent = finalLine.slice(0, j++);
+      setTimeout(step, 35);
+    }
+  })();
+}
+// hook into modal open for the 'final' case
+const _origShowModal = showModal;
+showModal = function(id){
+  _origShowModal(id);
+  if(id === 'final') setTimeout(typeFinalLine, 150);
+};
+
+/* ============================================================
+   FINALE
+   ============================================================ */
+function showFinale(){
+  document.getElementById('surprises').classList.add('hidden');
+  document.getElementById('finaleName').textContent = birthdayConfig.brotherName;
+  document.getElementById('finale').classList.remove('hidden');
+  document.getElementById('finale').scrollIntoView({behavior:'smooth'});
+  celebrateFinale();
+}
+function celebrateFinale(){
+  burstConfetti(140);
+  burstHearts(24);
+  burstBalloons(8);
+}
+
+/* ============================================================
+   FX HELPERS: confetti / hearts / sparkles / balloons
+   ============================================================ */
+const fxLayer = document.getElementById('fxLayer');
+const fxColors = ['#e8b968','#e0607e','#4fd9b0','#ffffff','#c98f4a'];
+
+function burstConfetti(n){
+  for(let k=0;k<n;k++){
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.background = fxColors[k % fxColors.length];
+    p.style.animationDuration = (2 + Math.random()*3) + 's';
+    p.style.transform = 'rotate(' + Math.random()*360 + 'deg)';
+    p.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
+    fxLayer.appendChild(p);
+    setTimeout(()=>p.remove(), 5500);
+  }
+}
+function burstHearts(n){
+  const hearts = ['❤️','💛','💚','💖'];
+  for(let k=0;k<n;k++){
+    const h = document.createElement('div');
+    h.className = 'heart-piece';
+    h.textContent = hearts[k % hearts.length];
+    h.style.left = Math.random()*100 + 'vw';
+    h.style.setProperty('--drift', (Math.random()*80-40)+'px');
+    h.style.animationDuration = (4 + Math.random()*3) + 's';
+    fxLayer.appendChild(h);
+    setTimeout(()=>h.remove(), 8000);
+  }
+}
+function burstSparkles(n){
+  for(let k=0;k<n;k++){
+    const s = document.createElement('div');
+    s.className = 'sparkle-piece';
+    s.textContent = '✨';
+    s.style.left = (10 + Math.random()*80) + 'vw';
+    s.style.top = (20 + Math.random()*60) + 'vh';
+    fxLayer.appendChild(s);
+    setTimeout(()=>s.remove(), 1700);
+  }
+}
+function burstBalloons(n){
+  const balloonColors = ['#e0607e','#e8b968','#4fd9b0','#c98f4a'];
+  for(let k=0;k<n;k++){
+    const b = document.createElement('div');
+    b.className = 'balloon';
+    b.style.left = (5 + Math.random()*90) + 'vw';
+    b.style.background = balloonColors[k % balloonColors.length];
+    b.style.animationDuration = (7 + Math.random()*4) + 's';
+    b.style.opacity = .9;
+    fxLayer.appendChild(b);
+    setTimeout(()=>b.remove(), 11500);
+  }
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderCards();
+updateProgress();
+</script>
+</body>
+</html>
